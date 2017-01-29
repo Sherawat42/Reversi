@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -24,6 +25,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     TextView p1ScoreTV;
     TextView p2ScoreTV;
     private static int[][] DIRECTIONS = new int[8][2];
+    boolean player1Turn = true;
+    ReversieBoard gameBoard;
+    final static ReversieButton nullReversieButton = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         scoreBoard.setLayoutParams(params);
         mainLayout.addView(scoreBoard);
 
-        ReversieBoard gameBoard = new ReversieBoard(this, dimensionX, dimensionY);
+        gameBoard = new ReversieBoard(this, dimensionX, dimensionY);
         params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 3);
         gameBoard.setLayoutParams(params);
         mainLayout.addView(gameBoard);
@@ -95,6 +99,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 gameBoard.getButton(i,j).setOnClickListener(this);
             }
         }
+        gameBoard.getButton(3,3).setPlayer(PLAYER_1);
+        gameBoard.getButton(3,3).setText("X");
+        gameBoard.getButton(4,4).setPlayer(PLAYER_1);
+        gameBoard.getButton(4,4).setText("X");
+
+        gameBoard.getButton(4,3).setPlayer(PLAYER_2);
+        gameBoard.getButton(4,3).setText("0");
+        gameBoard.getButton(3,4).setPlayer(PLAYER_2);
+        gameBoard.getButton(3,4).setText("0");
     }
 
     /**
@@ -110,18 +123,154 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }else if(false){
 
         }else{
-            ReversieButton clickedButton = (ReversieButton)findViewById(id);
-            if(moveAllowed(clickedButton)){
-
+            ReversieButton clickedButton = (ReversieButton)v;
+//            System.out.println("here");
+            if(clickedButton.getPlayer() != NO_PLAYER){
+                Toast.makeText(this, "choose unmarked cell :P", Toast.LENGTH_SHORT).show();
+                return;
             }
+            clickedButton.setBackgroundColor(Color.WHITE);
+            int[][] targets = getTargets(clickedButton);
+            if(targets == null){
+                Toast.makeText(this, "Invalid move!", Toast.LENGTH_SHORT).show();
+            }else{
+                makeMove(clickedButton,targets);
+            }
+        }
+        player1Turn = !player1Turn;
+    }
+
+    private void makeMove(ReversieButton clickedButton, int[][] targets) {
+        int directionIndex = targets[0][2];
+        int currentLocation[];
+        for(int i=0; i<targets.length;i++){
+            currentLocation = clickedButton.getLocation();
+            do {
+                if(player1Turn){
+                    gameBoard.getButton(currentLocation[0],currentLocation[1]).setPlayer(PLAYER_1);
+                    gameBoard.getButton(currentLocation[0],currentLocation[1]).setText("X");
+                }else{
+                    gameBoard.getButton(currentLocation[0],currentLocation[1]).setPlayer(PLAYER_2);
+                    gameBoard.getButton(currentLocation[0],currentLocation[1]).setText("0");
+                }
+                currentLocation[0]+=DIRECTIONS[i][0];
+                currentLocation[1]+=DIRECTIONS[i][1];
+
+            }while(currentLocation[0]==targets[i][0] && currentLocation[1]==targets[i][1]);
         }
     }
 
-    private boolean moveAllowed(ReversieButton clickedButton) {
+    private int[][] getTargets(ReversieButton clickedButton) {
         //First check the clicked button
+        int[][] targetButtons = new int[8][3];
+        int targetButtonsFillIndex = 0;
+        for(int i=0;i<8;i++){
+            int[] target = getPossibility(i,clickedButton);
+            if(target == null){
+                continue;
+            }else{
+                targetButtons[targetButtonsFillIndex++] = target;
+            }
+        }
+        return targetButtons;
+    }
+
+    private int[] getPossibility(int directionIndex, ReversieButton clickedButton){
+        int[] possibility = new int[3];
+        int[] location = clickedButton.getLocation();
+        if(player1Turn){
+            if(inBoardBounds(location, directionIndex)){
+                if(!checkButton(gameBoard.getButton(location[0]+DIRECTIONS[directionIndex][0],location[1]+DIRECTIONS[directionIndex][1]),PLAYER_2)){
+                    return null;
+                }
+            }else{
+                return null;
+            }
+        }else{
+            if(inBoardBounds(location,directionIndex)){
+                if(!checkButton(gameBoard.getButton(location[0]+DIRECTIONS[directionIndex][0],location[1]+DIRECTIONS[directionIndex][1]),PLAYER_1)){
+                    return null;
+                }
+            }else{
+                return null;
+            }
+        }
+        location[0]=location[0]+DIRECTIONS[directionIndex][0];
+        location[1]=location[1]+DIRECTIONS[directionIndex][1];
+        while(true){
+            if(player1Turn){
+                if(checkButton(gameBoard.getButton(location[0],location[1]),PLAYER_1)){
+                    possibility[0] = location[0];
+                    possibility[1] = location[1];
+                    possibility[2] = directionIndex;
+                    return possibility;
+                }
+            }else{
+                if(checkButton(gameBoard.getButton(location[0],location[1]),PLAYER_2)){
+                    possibility[0] = location[0];
+                    possibility[1] = location[1];
+                    possibility[2] = directionIndex;
+                    return possibility;
+                }
+            }
+
+            if(!inBoardBounds(location, directionIndex)){
+                return null;
+            }
+            location[0]=location[0]+DIRECTIONS[directionIndex][0];
+            location[1]=location[1]+DIRECTIONS[directionIndex][1];
+        }
+    }
+    private boolean checkButton(ReversieButton buttonToBeChecked, int player){
 
 
 
-        return false;
+//        float tempX = index/dimensionX;
+//        int x;
+//        if((int)tempX != 0){
+//            x = ((int)tempX);
+//        }else{
+//            x = (int)tempX;
+//        }
+//        int y = (index-1)%dimensionY;
+
+
+
+
+
+//                                                            CHECK THE CODE BELOW
+        if(player == NO_PLAYER){
+            if(buttonToBeChecked.getPlayer() == NO_PLAYER){
+               return true;
+            }else{
+                return false;
+            }
+        }else{
+            if(player == PLAYER_1){
+                if(buttonToBeChecked.getPlayer() == PLAYER_1){
+                    return true;
+                }else{
+                    return false;
+                }
+            }else{
+                if(buttonToBeChecked.getPlayer() == PLAYER_2){
+                    return true;
+                }
+                else{
+                    return false;
+                }
+            }
+        }
+
+    }
+
+    public boolean inBoardBounds(int[] buttonLocation, int directionIndex){
+        int x = buttonLocation[0]+DIRECTIONS[directionIndex][0];
+        int y = buttonLocation[1]+DIRECTIONS[directionIndex][1];
+        if(x>=0 && x<dimensionX && y>=0 && y<dimensionY){
+            return true;
+        }else{
+            return false;
+        }
     }
 }

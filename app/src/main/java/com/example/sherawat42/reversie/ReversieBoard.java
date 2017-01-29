@@ -23,9 +23,13 @@ public final class ReversieBoard extends LinearLayout{
             rows[i].setLayoutParams(paramsRow);
             rows[i].setOrientation(HORIZONTAL);
             for(int j=0;j<dimensionY;j++){
-                buttons[i][j] = new ReversieButton(context,(i+1)*(j+1));
+                int[] location = new int[2];
+                location[0] = i;
+                location[1] = j;
+                buttons[i][j] = new ReversieButton(context,location);
                 buttons[i][j].setPlayer(0);
                 buttons[i][j].setText("");
+//                buttons[i][j].setText(((i)*dimensionX+j+1)+"");//Comment this line after making the app
                 buttons[i][j].setLayoutParams(paramsButton);
                 rows[i].addView(buttons[i][j]);
             }
