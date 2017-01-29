@@ -8,10 +8,16 @@ import android.widget.Button;
  */
 
 public class ReversieButton extends Button {
-    public ReversieButton(Context context) {
+    public ReversieButton(Context context, int index) {
         super(context);
+        this.index = index;
     }
     private int player;
+    private final int index;
+
+    public int getIndex(){
+        return index;
+    }
 
     public int getPlayer() {
         return player;

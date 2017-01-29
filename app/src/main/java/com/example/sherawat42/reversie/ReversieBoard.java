@@ -23,7 +23,7 @@ public final class ReversieBoard extends LinearLayout{
             rows[i].setLayoutParams(paramsRow);
             rows[i].setOrientation(HORIZONTAL);
             for(int j=0;j<dimensionY;j++){
-                buttons[i][j] = new ReversieButton(context);
+                buttons[i][j] = new ReversieButton(context,(i+1)*(j+1));
                 buttons[i][j].setPlayer(0);
                 buttons[i][j].setText("");
                 buttons[i][j].setLayoutParams(paramsButton);
@@ -36,7 +36,7 @@ public final class ReversieBoard extends LinearLayout{
     private ReversieButton[][] buttons;
     private LinearLayout[] rows;
 
-    public ReversieButton getButtons(int x, int y) {
+    public ReversieButton getButton(int x, int y) {
         return buttons[x][y];
     }
 }
